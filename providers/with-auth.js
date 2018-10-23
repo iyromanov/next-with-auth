@@ -12,7 +12,6 @@ export default function withAuth(Component) {
         }
         
         const { req, res } = input;
-        // TODO: for first auth request it doesnt work (only set-cookie header available)
         const cookies = req.headers.cookie;
         const meResp = await fetch('http://localhost:3000/me', { headers: { cookie: cookies } });
         if (meResp.status === 401) {

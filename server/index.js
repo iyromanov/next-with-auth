@@ -19,7 +19,7 @@ async function start() {
     if (isUser(req.body)) {
       res.cookie('foo', 'bar', { httpOnly: true });
     }
-    return app.render(req, res, '/user');
+    return res.redirect('/user');
   });
   
   server.get('/me', (req, res) => {
