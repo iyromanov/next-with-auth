@@ -17,11 +17,8 @@ app.prepare()
     server.post('/auth', (req, res) => {
       if (isUser(req.body)) {
         res.setHeader('Set-Cookie', 'foo=bar; HttpOnly');
-        return app.render(req, res, '/user');
-      } else {
-        // render 401
-        return app.render(req, res, '/401');
       }
+      return app.render(req, res, '/user');
     });
 
     server.get('/me', (req, res) => {
