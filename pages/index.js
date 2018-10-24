@@ -15,6 +15,7 @@ export default () => (
             <div>
                 <button type="sumbit">Submit</button>
             </div>
+            <Link href="/user">To User page</Link>
         </form>
         <style jsx global>{`
             html, body, #__next {

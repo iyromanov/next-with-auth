@@ -18,6 +18,8 @@ async function start() {
   server.post('/auth', (req, res) => {
     if (isUser(req.body)) {
       res.cookie('foo', 'bar', { httpOnly: true });
+    } else {
+      res.clearCookie('foo');
     }
     return res.redirect('/user');
   });

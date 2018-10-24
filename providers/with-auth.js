@@ -5,26 +5,33 @@ export default function withAuth(Component) {
     const originalGetInitialProps = Component.getInitialProps;
 
     Component.getInitialProps = async function(input) {
-        let props;
+        let props = {};
         
         if (originalGetInitialProps) {
             props = await originalGetInitialProps(props);
         }
         
         const { req, res } = input;
-        const cookies = req.headers.cookie;
-        const meResp = await fetch('http://localhost:3000/me', { headers: { cookie: cookies } });
+
+        const options = req && { headers: { cookie: req.headers.cookie } };
+
+        const meResp = await fetch('http://localhost:3000/me', options);
+
         if (meResp.status === 401) {
-            res.writeHead(302, {
-                Location: '/'
-            });
-            res.end();
+            if (res) { // ssr
+                res.writeHead(302, { Location: '/' });
+                res.end();
+            } else {   // client
+                Router.push('/');
+            }
+            return props;
         }
+
         const data = await meResp.json();
         return {
             ...props,
             ...data
-        }
+        };
     }
 
     return Component;
