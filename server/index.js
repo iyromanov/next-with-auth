@@ -13,7 +13,7 @@ async function start() {
   await app.prepare();
 
   const server = express();
-  server.use([bodyParser.urlencoded(), cookieParser()]);
+  server.use([bodyParser.urlencoded({ extended: true }), cookieParser()]);
   
   server.post('/auth', (req, res) => {
     if (isUser(req.body)) {
