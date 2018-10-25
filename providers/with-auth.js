@@ -13,17 +13,22 @@ export default function withAuth(Component) {
         
         const { req, res } = input;
 
-        const options = req && { headers: { cookie: req.headers.cookie } };
-
-        const meResp = await fetch('http://localhost:3000/me', options);
-
-        if (meResp.status === 401) {
-            if (res) { // ssr
+        if (req) {
+            if (req.user) {
+                return {
+                    ...props,
+                    ...req.user
+                };
+            } else {
                 res.writeHead(302, { Location: '/' });
                 res.end();
-            } else {   // client
-                Router.push('/');
             }
+        }
+
+        const meResp = await fetch('http://localhost:3000/me');
+
+        if (meResp.status === 401) {
+            Router.push('/');
             return props;
         }
 

@@ -5,8 +5,8 @@ export default () => (
     <div className="root">
         <form className="form" action="/auth" method="POST">
             <div>
-                <label htmlFor="login">Login:</label>
-                <input id="login" name="login"/>
+                <label htmlFor="username">Username:</label>
+                <input id="username" name="username"/>
             </div>
             <div>
                 <label htmlFor="password">Password:</label>
