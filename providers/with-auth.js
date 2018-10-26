@@ -17,25 +17,26 @@ export default function withAuth(Component) {
             if (req.user) {
                 return {
                     ...props,
-                    ...req.user
+                    user: req.user
                 };
             } else {
-                res.writeHead(302, { Location: '/' });
+                res.writeHead(302, { Location: '/login' });
                 res.end();
+                return props;
             }
         }
 
         const meResp = await fetch('http://localhost:3000/me');
 
         if (meResp.status === 401) {
-            Router.push('/');
+            Router.push('/login');
             return props;
         }
 
-        const data = await meResp.json();
+        const user = await meResp.json();
         return {
             ...props,
-            ...data
+            user
         };
     }
 

@@ -5,7 +5,7 @@ const cookieParser = require('cookie-parser');
 
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
-const expressSession = require('express-session');
+const session = require('express-session');
 
 const port = parseInt(process.env.PORT, 10) || 3000;
 const dev = process.env.NODE_ENV !== 'production';
@@ -40,23 +40,13 @@ async function start() {
 
   const server = express();
   server.use([bodyParser.urlencoded({ extended: true }), cookieParser()]);
-  server.use(expressSession({ secret: 'keyboard cat', resave: false, saveUninitialized: false }));
+  server.use(session({ secret: 'keyboard cat', resave: false, saveUninitialized: false }));
   server.use(passport.initialize());
   server.use(passport.session());
 
-  
-  // server.post('/auth', (req, res) => {
-  //   if (isUser(req.body)) {
-  //     res.cookie('foo', 'bar', { httpOnly: true });
-  //   } else {
-  //     res.clearCookie('foo');
-  //   }
-  //   return res.redirect('/user');
-  // });
-
   server.post('/auth',
-    passport.authenticate('local', { failureRedirect: '/' }),
-    (req, res) => res.redirect('/user')
+    passport.authenticate('local', { failureRedirect: '/login' }),
+    (req, res) => res.redirect('/')
   );
   
   server.get('/me', (req, res) => {
@@ -65,6 +55,11 @@ async function start() {
     } else {
       return res.status(401).send({});
     }
+  });
+
+  server.get('/logout', (req, res) => {
+    req.logout();
+    return res.redirect('/login');
   });
   
   server.get('*', (req, res) => {
