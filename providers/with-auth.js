@@ -1,6 +1,12 @@
 import fetch from 'isomorphic-fetch';
 import Router from 'next/router';
 
+/*
+    TODO: 
+        1. Add decorator factory
+        2. Split client & server logic
+        3. Webpack: remove server logic from client chunks
+*/
 export default function withAuth(Component) {
     const originalGetInitialProps = Component.getInitialProps;
 
