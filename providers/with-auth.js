@@ -32,14 +32,14 @@ export default function withAuth(Component) {
             }
         }
 
-        const meResp = await fetch('http://localhost:3000/me');
+        const userRes = await fetch('http://localhost:3000/user');
 
-        if (meResp.status === 401) {
+        if (!userRes.ok) {
             Router.push('/login');
             return props;
         }
 
-        const user = await meResp.json();
+        const user = await userRes.json();
         return {
             ...props,
             user

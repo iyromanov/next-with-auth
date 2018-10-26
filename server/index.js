@@ -1,29 +1,40 @@
 const express = require('express');
 const next = require('next');
 const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
 
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const session = require('express-session');
 
-const port = parseInt(process.env.PORT, 10) || 3000;
+const User = require('./service/user');
+
+const PORT = parseInt(process.env.PORT, 10) || 3000;
 const dev = process.env.NODE_ENV !== 'production';
 
-const app = next({ dev });
-const handle = app.getRequestHandler();
+const SESSION_CONF = { 
+  name: 'sesid',
+  secret: 'woof woof',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    sameSite: true,
+    expires: 10000
+  }
+};
 
-const USER = { id: 1, name: 'Igor' };
+const nextApp = next({ dev });
+const nextAppRequestHandler = nextApp.getRequestHandler();
 
 async function start() {
-  await app.prepare();
+  await nextApp.prepare();
 
   passport.use(new LocalStrategy(
-    (username, password, done) => {
-      if (username === password) {
-        return done(null, USER)
-      } else {
-        return done(null, false, { message: 'Invalid password' });
+    async (username, password, done) => {
+      try {
+        const user = await User.findOne(username, password);
+        return done(null, user)
+      } catch(err) {
+        return done(null, false, err);
       }
     }
   ));
@@ -32,43 +43,43 @@ async function start() {
     cb(null, user.id);
   });
 
-  passport.deserializeUser((id, cb) => {
-    if (id === 1) {
-      return cb(null, USER)
-    }
+  passport.deserializeUser(async (id, cb) => {
+    const user = await User.findById(id);
+    return cb(null, user)
   });
 
-  const server = express();
-  server.use([bodyParser.urlencoded({ extended: true }), cookieParser()]);
-  server.use(session({ secret: 'keyboard cat', resave: false, saveUninitialized: false }));
-  server.use(passport.initialize());
-  server.use(passport.session());
+  const app = express();
 
-  server.post('/auth',
+  app.use([bodyParser.urlencoded({ extended: false })]);
+  app.use(session(SESSION_CONF));
+  app.use(passport.initialize());
+  app.use(passport.session());
+
+  app.post('/auth',
     passport.authenticate('local', { failureRedirect: '/login' }),
     (req, res) => res.redirect('/')
   );
-  
-  server.get('/me', (req, res) => {
-    if (req.user) {
-      return res.json(req.user);
-    } else {
-      return res.status(401).send({});
-    }
-  });
 
-  server.get('/logout', (req, res) => {
+  app.get('/logout', (req, res) => {
     req.logout();
     return res.redirect('/login');
   });
   
-  server.get('*', (req, res) => {
-    return handle(req, res);
+  app.get('/user', (req, res) => {
+    if (req.user) {
+      return res.json(req.user);
+    } else {
+      return res.status(401).json({});
+    }
+  });
+
+  app.get('*', (req, res) => {
+    return nextAppRequestHandler(req, res);
   });
   
-  server.listen(port, (err) => {
+  app.listen(PORT, (err) => {
     if (err) throw err;
-    console.log(`> Ready on http://localhost:${port}`);
+    console.log(`> Ready on http://localhost:${PORT}`);
   });
 }
 
